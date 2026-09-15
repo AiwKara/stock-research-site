@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<meta name="googlebot" content="noindex, nofollow">
+<meta name="theme-color" content="#0b2545">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="format-detection" content="telephone=no">
+<title>多体系选股研究 · 个人研究终端</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>">
+<style>
+:root{
+  --navy:#0b2545; --navy2:#14345e; --blue:#1f6feb; --blue-l:#e8f1fd;
+  --ink:#12233a; --muted:#5b6b82; --line:#e3e9f1; --bg:#f4f6fa; --card:#fff;
+  --up:#c0392b; --down:#1e8e5a; --warn:#b7791f; --warn-bg:#fdf6e6;
+  --danger:#b02a2a; --danger-bg:#fdeced; --ok-bg:#e9f6ef;
+  --topbar-h:56px; --bottomnav-h:60px;
+  --safe-b:env(safe-area-inset-bottom,0px);
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--font);
+  font-size:15px; line-height:1.7; -webkit-font-smoothing:antialiased;
+  padding-bottom:calc(var(--bottomnav-h) + var(--safe-b) + 8px);
+}
+/* ───── 顶栏 ───── */
+.topbar{
+  position:sticky; top:0; z-index:60; height:var(--topbar-h);
+  background:linear-gradient(135deg,#0b2545,#1b4a86); color:#fff;
+  display:flex; align-items:center; gap:10px; padding:0 14px;
+  box-shadow:0 2px 12px rgba(11,37,69,.18);
+}
+.topbar .logo{font-size:17px;font-weight:700;letter-spacing:.3px;white-space:nowrap;}
+.topbar .meta{margin-left:auto;font-size:11.5px;color:#a9c6e6;text-align:right;line-height:1.35;}
+.topbar .meta b{color:#fff;font-weight:600;}
+/* ───── 桌面端顶部导航 ───── */
+.desktop-tabs{display:none;}
+/* ───── 内容 ───── */
+.wrap{max-width:1180px;margin:0 auto;padding:14px 14px 8px;}
+.page{display:none;}
+.page.active{display:block;animation:fade .22s ease;}
+@keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+h2{font-size:18px;margin:6px 0 4px;color:var(--navy);display:flex;align-items:center;gap:8px;}
+h2 .n{background:var(--navy);color:#fff;min-width:24px;height:24px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-size:12.5px;flex:0 0 auto;}
+.lead{color:var(--muted);font-size:12.8px;margin:0 0 14px;}
+.card{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:15px 16px;margin-bottom:12px;}
+.inner{background:#fbfcfe;border:1px solid var(--line);border-radius:10px;padding:12px 13px;}
+/* ───── 卡片网格 ───── */
+.grid{display:grid;gap:11px;}
+.g2{grid-template-columns:1fr;}
+.g3{grid-template-columns:repeat(2,1fr);}
+.g4{grid-template-columns:repeat(2,1fr);}
+/* ───── 统计 ───── */
+.stat{background:#fff;border:1px solid var(--line);border-radius:11px;padding:12px 10px;text-align:center;}
+.stat .v{font-size:19px;font-weight:700;color:var(--navy);font-variant-numeric:tabular-nums;line-height:1.25;}
+.stat .l{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.4;}
+.stat.warn{border-color:#f0dfae;background:#fffdf7;}
+.stat.warn .v{color:var(--warn);}
+/* ───── 指数条 ───── */
+.idx{display:flex;align-items:center;gap:9px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff;margin-bottom:7px;}
+.idx .nm{font-weight:600;font-size:13.5px;flex:1;min-width:0;}
+.idx .vl{font-variant-numeric:tabular-nums;font-size:13.5px;color:var(--muted);}
+.idx .ch{font-variant-numeric:tabular-nums;font-weight:700;font-size:13.5px;min-width:64px;text-align:right;}
+.idx .nt{font-size:11px;color:#8a97a8;display:none;}
+.up{color:var(--up);} .down{color:var(--down);} .flat{color:var(--muted);}
+/* ───── 徽章 ───── */
+.badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;white-space:nowrap;line-height:1.6;}
+.b-buy{background:#fdeceb;color:#b02a2a;border:1px solid #f3d0ce;}
+.b-hold{background:#eef2f7;color:#4a5b70;border:1px solid #d5dfea;}
+.b-watch{background:#fdf6e6;color:#9a6a12;border:1px solid #f0dfae;}
+.b-wait{background:#eef4fd;color:#1f6feb;border:1px solid #cfe0f8;}
+.b-judg{background:#eef4fd;color:#1f6feb;border:1px solid #cfe0f8;}
+.b-fact{background:#e9f6ef;color:#1e7a4d;border:1px solid #c7e6d5;}
+/* ───── 提示块 ───── */
+.callout{border-radius:11px;padding:13px 14px;margin:12px 0;font-size:13px;line-height:1.7;}
+.c-danger{background:var(--danger-bg);border-left:4px solid var(--danger);}
+.c-warn{background:var(--warn-bg);border-left:4px solid var(--warn);}
+.c-ok{background:var(--ok-bg);border-left:4px solid #1e8e5a;}
+.c-info{background:var(--blue-l);border-left:4px solid var(--blue);}
+.callout b{color:var(--navy);}
+.src{font-size:11px;color:#8a97a8;display:block;margin-top:5px;}
+/* ───── 情绪阶梯 ───── */
+.ladder{display:flex;flex-direction:column;gap:8px;}
+.lad-row{display:grid;grid-template-columns:56px 1fr 40px;gap:9px;align-items:center;font-size:13px;}
+.lad-row .lb{font-weight:600;color:var(--navy2);font-size:12.5px;}
+.lad-row .bl{height:20px;background:#eef2f7;border-radius:5px;overflow:hidden;position:relative;}
+.lad-row .bl i{position:absolute;inset:0 auto 0 0;border-radius:5px;background:linear-gradient(90deg,#9fc4f5,#1f6feb);display:block;}
+.lad-row .bl i.hi{background:linear-gradient(90deg,#f6b8b3,#c0392b);}
+.lad-row .ct{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;color:var(--navy);}
+/* ───── 候选卡片 ───── */
+.cand{background:#fff;border:1px solid var(--line);border-left:4px solid var(--blue);border-radius:12px;padding:13px 14px;margin-bottom:11px;}
+.cand[data-sys="short"]{border-left-color:#e0a33a;}
+.cand[data-sys="mid"]{border-left-color:#1f6feb;}
+.cand[data-sys="long"]{border-left-color:#1e8e5a;}
+.cand-h{display:flex;align-items:flex-start;gap:9px;flex-wrap:wrap;}
+.cand-h .nm{font-size:16px;font-weight:700;color:var(--navy);}
+.cand-h .cd{font-family:ui-monospace,Consolas,monospace;font-size:11.5px;color:var(--muted);background:#f2f5f9;padding:1px 7px;border-radius:6px;}
+.cand-h .rt{margin-left:auto;}
+.kv{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:11px 0 9px;}
+.kv div{background:#f7f9fc;border:1px solid var(--line);border-radius:8px;padding:7px 8px;text-align:center;}
+.kv .k{font-size:10.5px;color:var(--muted);}
+.kv .v{font-size:13.5px;font-weight:700;color:var(--navy);font-variant-numeric:tabular-nums;}
+.kv .v.up{color:var(--up);} .kv .v.down{color:var(--down);}
+/* ───── 情景条 ───── */
+.scen{margin:9px 0 7px;}
+.scen .t{font-size:11.5px;color:var(--muted);margin-bottom:6px;}
+.scen .row{display:grid;grid-template-columns:44px 1fr 96px;gap:8px;align-items:center;margin-bottom:5px;font-size:12px;}
+.scen .lb{font-weight:600;color:var(--navy2);}
+.scen .bar{height:17px;border-radius:5px;background:#eef2f7;overflow:hidden;position:relative;}
+.scen .bar i{position:absolute;inset:0 auto 0 0;border-radius:5px;display:block;}
+.scen .bar i.opt{background:linear-gradient(90deg,#f6b8b3,#e05a4e);}
+.scen .bar i.base{background:linear-gradient(90deg,#9fc4f5,#1f6feb);}
+.scen .bar i.pess{background:linear-gradient(90deg,#a8ddc2,#1e8e5a);}
+.scen .pv{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;font-size:12px;}
+.pv-o{color:var(--up);} .pv-b{color:var(--blue);} .pv-p{color:var(--down);}
+/* ───── 列表 ───── */
+ul.tight{margin:7px 0;padding-left:17px;font-size:13px;}
+ul.tight li{margin-bottom:4px;}
+.tag-h{display:inline-block;font-size:11.5px;font-weight:700;color:var(--navy2);margin:11px 0 2px;}
+/* ───── 表格（可横向滚动） ───── */
+.tblwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:9px 0;border:1px solid var(--line);border-radius:10px;}
+table{border-collapse:collapse;font-size:12.5px;width:100%;min-width:520px;}
+th{background:#eef3f9;color:var(--navy);text-align:left;padding:8px 10px;border-bottom:1px solid #dbe4ee;font-weight:600;font-size:11.5px;white-space:nowrap;}
+td{padding:8px 10px;border-bottom:1px solid #eef2f7;vertical-align:top;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:nth-child(even){background:#fafcfe;}
+.mono{font-family:ui-monospace,Consolas,monospace;font-variant-numeric:tabular-nums;}
+/* ───── 折叠 ───── */
+details{background:#fbfcfe;border:1px solid var(--line);border-radius:10px;padding:10px 13px;margin:9px 0;font-size:12.8px;}
+summary{cursor:pointer;font-weight:600;color:var(--navy2);font-size:13px;}
+details[open] summary{margin-bottom:8px;padding-bottom:7px;border-bottom:1px dashed var(--line);}
+/* ───── 底部导航（移动端） ───── */
+.bottomnav{
+  position:fixed;left:0;right:0;bottom:0;z-index:70;
+  height:calc(var(--bottomnav-h) + var(--safe-b));
+  padding-bottom:var(--safe-b);
+  background:rgba(255,255,255,.96);backdrop-filter:blur(12px);
+  border-top:1px solid var(--line);
+  display:flex;align-items:stretch;
+}
+.bottomnav button{
+  flex:1;border:none;background:none;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  font-size:10.5px;color:#8a97a8;font-family:var(--font);padding:0;min-height:44px;
+}
+.bottomnav button .ic{font-size:18px;line-height:1;}
+.bottomnav button.on{color:var(--blue);font-weight:700;}
+.bottomnav button.on .ic{transform:scale(1.06);}
+/* ───── 页脚 ───── */
+footer{max-width:1180px;margin:14px auto 0;padding:16px 16px 8px;border-top:1px solid var(--line);text-align:center;font-size:11.5px;color:var(--muted);line-height:1.8;}
+footer .big{color:var(--danger);font-weight:700;font-size:12.8px;margin-bottom:5px;}
+/* ═══════════ 桌面端：≥860px ═══════════ */
+@media(min-width:860px){
+  body{padding-bottom:24px;font-size:15px;}
+  .topbar{height:64px;padding:0 26px;}
+  .topbar .logo{font-size:19px;}
+  .topbar .meta{font-size:12.5px;}
+  .bottomnav{display:none;}
+  .desktop-tabs{
+    display:flex;gap:6px;background:#fff;border-bottom:1px solid var(--line);
+    padding:0 26px;position:sticky;top:64px;z-index:55;
+  }
+  .desktop-tabs button{
+    border:none;background:none;cursor:pointer;font-family:var(--font);
+    font-size:14px;color:var(--muted);padding:14px 16px;border-bottom:2.5px solid transparent;
+    transition:.15s;
+  }
+  .desktop-tabs button:hover{color:var(--navy2);}
+  .desktop-tabs button.on{color:var(--blue);font-weight:700;border-bottom-color:var(--blue);}
+  .wrap{padding:22px 26px 8px;}
+  h2{font-size:21px;} h2 .n{min-width:28px;height:28px;font-size:14px;}
+  .lead{font-size:13.5px;margin-bottom:18px;}
+  .card{padding:22px 24px;margin-bottom:18px;border-radius:14px;}
+  .grid{gap:14px;}
+  .g2{grid-template-columns:repeat(2,1fr);}
+  .g3{grid-template-columns:repeat(4,1fr);}
+  .g4{grid-template-columns:repeat(4,1fr);}
+  .idx .nt{display:block;min-width:110px;}
+  .idx{gap:14px;}
+  .lad-row{grid-template-columns:76px 1fr 52px;}
+  .cand{padding:16px 18px;}
+  .kv{grid-template-columns:repeat(4,1fr);gap:9px;}
+  .scen .row{grid-template-columns:52px 1fr 118px;font-size:12.8px;}
+  table{font-size:13.2px;min-width:0;}
+  footer{font-size:12.5px;padding:22px 26px 8px;}
+}
+@media(min-width:1100px){
+  .wrap{padding:24px 0 8px;}
+}
+/* 极窄屏（iPhone SE 等） */
+@media(max-width:359px){
+  .kv{grid-template-columns:repeat(2,1fr);}
+  .g3,.g4{grid-template-columns:1fr;}
+  .scen .row{grid-template-columns:40px 1fr 86px;}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo">📈 多体系选股研究</div>
+  <div class="meta">
+    数据基准 <b id="m-dataDate">—</b><br>
+    更新 <b id="m-updatedAt">—</b>
+  </div>
+</header>
+
+<nav class="desktop-tabs" id="desktopTabs"></nav>
+
+<main class="wrap" id="main">
+
+  <!-- ① 总览 -->
+  <section class="page active" data-page="overview">
+    <h2><span class="n">①</span>市场总览</h2>
+    <p class="lead" id="o-sub"></p>
+    <div class="grid g3" id="o-stats"></div>
+    <div id="o-alert"></div>
+    <div class="card">
+      <div class="tag-h">指数表现</div>
+      <div id="o-idx"></div>
+    </div>
+    <div class="card">
+      <div class="tag-h">情绪温度计 · 连板高度分布</div>
+      <div class="ladder" id="o-ladder"></div>
+      <div class="callout c-warn" id="o-ladder-note"></div>
+    </div>
+    <div class="card">
+      <div class="tag-h">核心结论</div>
+      <div id="o-concl"></div>
+    </div>
+  </section>
+
+  <!-- ② 候选标的 -->
+  <section class="page" data-page="candidates">
+    <h2><span class="n">②</span>候选标的</h2>
+    <p class="lead" id="c-sub"></p>
+    <div class="grid g4" id="c-filter"></div>
+    <div id="c-list"></div>
+  </section>
+
+  <!-- ③ 三体系 -->
+  <section class="page" data-page="systems">
+    <h2><span class="n">③</span>三体系与交叉命中</h2>
+    <p class="lead">同一只票同时命中多套体系，说明它同时满足不同时间维度的条件——这类标的最值得研究。</p>
+    <div id="s-clusters"></div>
+    <div class="card">
+      <div class="tag-h">三套体系参数差异</div>
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th>维度</th><th>短线·情绪</th><th>中线·趋势</th><th>长线·价值</th></tr></thead>
+          <tbody>
+            <tr><td>信号时钟</td><td>分钟级 / 日级</td><td>日级</td><td>周月级 + 财报</td></tr>
+            <tr><td>持仓周期</td><td>1–3 日</td><td>1–6 月</td><td>1–3 年</td></tr>
+            <tr><td>核心变量</td><td>连板高度 / 晋级率 / 封单</td><td>均线斜率 / 量能 / 资金持续性</td><td>估值分位 / ROE / 股息</td></tr>
+            <tr><td>建议资金权重</td><td>20%</td><td>50%</td><td>30%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout c-info">
+        <b>为什么必须物理隔离？</b>三套体系的换手率相差 1–2 个数量级（短线年化数十至上百倍，价值 0.2–1 倍），放进同一资金池会互相污染。<b>分槽记账、独立风控</b>是前提。
+      </div>
+    </div>
+  </section>
+
+  <!-- ④ 风险 -->
+  <section class="page" data-page="risk">
+    <h2><span class="n">④</span>风险与推翻条件</h2>
+    <p class="lead">这一节的作用是：当以下条件出现时，立即推翻本报告结论。</p>
+    <div class="card">
+      <div class="tag-h">宏观风险（最高优先级）</div>
+      <div id="r-macro"></div>
+    </div>
+    <div class="card">
+      <div class="tag-h">体系级风险</div>
+      <div id="r-system"></div>
+    </div>
+    <div class="card">
+      <div class="tag-h">操作节奏（超级央行周）</div>
+      <div id="r-schedule"></div>
+    </div>
+    <div class="card">
+      <div class="tag-h">数据与方法局限</div>
+      <ul class="tight" id="r-data"></ul>
+    </div>
+  </section>
+
+  <!-- ⑤ 溯源 -->
+  <section class="page" data-page="sources">
+    <h2><span class="n">⑤</span>数据溯源</h2>
+    <p class="lead">每个数字都可回到来源。缺失的数据明确标注，绝不编造。</p>
+    <div class="card">
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th>数据类型</th><th>来源</th><th>基准日</th></tr></thead>
+          <tbody id="src-body"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="tag-h">方法说明</div>
+      <ul class="tight">
+        <li><b>不给单点目标价</b>，只给「情景区间 + 概率 + 触发条件 + 推翻条件」。</li>
+        <li>情景法：<b>基准</b>＝盈利按一致预期兑现 + 估值维持当前分位；<b>乐观</b>＝盈利超预期 10–20% + 估值修复至历史中位；<b>悲观</b>＝盈利不及预期 + 估值回落至低分位。</li>
+        <li>所有概率为主观赋值，非统计模型输出，需按月复核。</li>
+        <li>主张类型标注：<span class="badge b-fact">事实</span> <span class="badge b-judg">判断</span> <span class="badge b-wait">模型输出</span></li>
+        <li>本报告<b>未做历史回测验证</b>，未纳入交易成本与税费。</li>
+      </ul>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="big">本报告仅供研究参考，不构成个人投资建议。</div>
+  <div>所有「情景涨幅区间」均为基于显式假设的前瞻性判断，不代表实际收益承诺。市场有风险，投资需谨慎。</div>
+  <div id="f-meta"></div>
+</footer>
+
+<nav class="bottomnav" id="bottomnav"></nav>
+
+<script src="assets/data.js"></script>
+<script>
+(function(){
+  const D = window.RESEARCH_DATA;
+  if(!D){document.body.innerHTML='<div style="padding:40px;text-align:center">数据加载失败：assets/data.js 未找到</div>';return;}
+
+  const PAGES = [
+    {id:'overview',   icon:'📊', label:'总览'},
+    {id:'candidates', icon:'🎯', label:'标的'},
+    {id:'systems',    icon:'🧩', label:'体系'},
+    {id:'risk',       icon:'⚠️', label:'风险'},
+    {id:'sources',    icon:'📚', label:'溯源'}
+  ];
+
+  /* ── 顶栏 ── */
+  document.getElementById('m-dataDate').textContent = D.meta.dataDate;
+  document.getElementById('m-updatedAt').textContent = D.meta.updatedAt;
+  document.getElementById('f-meta').textContent =
+    `报告日期 ${D.meta.reportDate} ｜ 数据基准日 ${D.meta.dataDate} ｜ 筛选池 ${D.meta.poolCount} 只 → 候选 ${D.meta.candidateCount} 只 ｜ 数据源：${D.meta.source}`;
+
+  /* ── 导航 ── */
+  const dt = document.getElementById('desktopTabs');
+  const bn = document.getElementById('bottomnav');
+  PAGES.forEach((p,i)=>{
+    const b1 = document.createElement('button');
+    b1.innerHTML = p.label; b1.dataset.t = p.id;
+    if(i===0) b1.classList.add('on');
+    dt.appendChild(b1);
+    const b2 = document.createElement('button');
+    b2.innerHTML = `<span class="ic">${p.icon}</span><span>${p.label}</span>`; b2.dataset.t = p.id;
+    if(i===0) b2.classList.add('on');
+    bn.appendChild(b2);
+  });
+  function go(id){
+    document.querySelectorAll('.page').forEach(s=>s.classList.toggle('active', s.dataset.page===id));
+    document.querySelectorAll('[data-t]').forEach(b=>b.classList.toggle('on', b.dataset.t===id));
+    window.scrollTo({top:0,behavior:'instant'});
+  }
+  document.querySelectorAll('[data-t]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.t)));
+
+  /* ── 工具 ── */
+  const esc = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const dirCls = d => d==='up'?'up':(d==='down'?'down':'flat');
+
+  /* ══ ① 总览 ══ */
+  document.getElementById('o-sub').textContent =
+    `数据基准日 ${D.meta.dataDate}（收盘）｜ 筛选池 ${D.meta.poolCount} 只 → 候选 ${D.meta.candidateCount} 只`;
+
+  document.getElementById('o-stats').innerHTML = D.market.stats.map(s=>
+    `<div class="stat ${s.tone==='warn'?'warn':''}"><div class="v">${esc(s.value)}</div><div class="l">${esc(s.label)}</div></div>`
+  ).join('');
+
+  const A = D.macroAlert;
+  document.getElementById('o-alert').innerHTML =
+    `<div class="callout ${A.level==='danger'?'c-danger':'c-warn'}"><b>⚠️ ${esc(A.title)}</b><br>${esc(A.body)}<span class="src">来源：${esc(A.src)}</span></div>`;
+
+  document.getElementById('o-idx').innerHTML = D.market.indices.map(x=>
+    `<div class="idx">
+       <span class="nm">${esc(x.name)}</span>
+       <span class="vl">${esc(x.value)}</span>
+       <span class="ch ${dirCls(x.dir)}">${esc(x.chg)}</span>
+       <span class="nt">${esc(x.note)}</span>
+     </div>`
+  ).join('');
+
+  const maxC = Math.max(...D.sentimentLadder.map(x=>x.count));
+  document.getElementById('o-ladder').innerHTML = D.sentimentLadder.map((x,i)=>
+    `<div class="lad-row">
+       <span class="lb">${esc(x.height)}</span>
+       <span class="bl"><i class="${i===0?'hi':''}" style="width:${Math.max(6,(x.count/maxC)*100)}%"></i></span>
+       <span class="ct">${x.count}</span>
+     </div>
+     <div style="grid-column:1/-1;font-size:11px;color:#8a97a8;margin:-4px 0 6px 65px;">${esc(x.rep)} · ${esc(x.meaning)}</div>`
+  ).join('');
+
+  document.getElementById('o-ladder-note').innerHTML =
+    `<b>专业解读：</b>高度只有 4 板、且 3 板以上合计仅 4 只，说明市场<b>没有形成赚钱效应的正向循环</b>——首板多、晋级少，是典型的「情绪修复中段／退潮后震荡」结构，而非主升期。在此结构下：首板晋级率低 → <b>追高容错率极低</b>；高位股缺承接 → <b>炸板风险大</b>；叠加缩量 17% → <b>增量资金不足</b>。<br><b>结论：短线体系本周只做观察，不做进攻。</b>`;
+
+  document.getElementById('o-concl').innerHTML = D.conclusions.map(c=>
+    `<div class="inner" style="margin-bottom:9px;">
+       <div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;">
+         <b style="color:var(--navy);font-size:14px;">${c.no}. ${esc(c.title)}</b>
+         <span class="badge b-judg">${esc(c.tag)}</span>
+       </div>
+       <div style="font-size:13px;margin-top:5px;">${esc(c.body)}</div>
+     </div>`
+  ).join('');
+
+  /* ══ ② 候选 ══ */
+  const SYS = {short:'短线·情绪', mid:'中线·趋势', long:'长线·价值', all:'全部'};
+  const counts = {all:D.candidates.length, short:0, mid:0, long:0};
+  D.candidates.forEach(c=>counts[c.system]++);
+  document.getElementById('c-sub').textContent =
+    `共 ${D.candidates.length} 只候选，按体系分组。点击筛选查看。`;
+
+  document.getElementById('c-filter').innerHTML = ['all','short','mid','long'].map(k=>
+    `<button class="stat" data-f="${k}" style="cursor:pointer;border-color:${k==='all'?'#1f6feb':'var(--line)'};">
+       <div class="v">${counts[k]}</div><div class="l">${SYS[k]}</div>
+     </button>`
+  ).join('');
+
+  function renderCands(filter){
+    const list = filter==='all' ? D.candidates : D.candidates.filter(c=>c.system===filter);
+    document.getElementById('c-list').innerHTML = list.map(c=>{
+      const kv = [
+        {k:'现价(元)', v:c.price, cls:c.dir},
+        {k:'涨跌幅',   v:c.change, cls:c.dir},
+        {k:'市值',     v:c.mktcap, cls:''},
+        {k:'PE / PB',  v:`${c.pe} / ${c.pb}`, cls:''}
+      ].map(x=>`<div><div class="k">${x.k}</div><div class="v ${x.cls}">${esc(x.v)}</div></div>`).join('');
+      const scen = c.scenarios.map(s=>
+        `<div class="row">
+           <span class="lb">${s.label}</span>
+           <span class="bar"><i class="${s.tone}" style="width:${s.pct}%"></i></span>
+           <span class="pv pv-${s.tone==='opt'?'o':(s.tone==='base'?'b':'p')}">${esc(s.value)}</span>
+         </div>`).join('');
+      return `<div class="cand" data-sys="${c.system}">
+        <div class="cand-h">
+          <span class="nm">${esc(c.name)}</span>
+          <span class="cd">${esc(c.code)}</span>
+          <span class="badge" style="background:#f2f5f9;color:#5b6b82;border:1px solid #e3e9f1;">${esc(c.theme)}</span>
+          <span class="rt"><span class="badge b-${c.ratingTone}">${esc(c.rating)}</span></span>
+        </div>
+        <div style="font-size:11.5px;color:#8a97a8;margin-top:3px;">${esc(c.systemLabel)} ｜ 主力资金：${esc(c.flow)}</div>
+        <div class="kv">${kv}</div>
+        <div class="scen">
+          <div class="t">情景涨幅区间（主观判断，见「溯源」页的假设说明）</div>
+          ${scen}
+        </div>
+        <details>
+          <summary>支撑逻辑 / 风险 / 触发与推翻条件</summary>
+          <div style="font-size:12.5px;">
+            <b style="color:var(--navy2);">支撑逻辑</b>
+            <ul class="tight">${c.highlights.map(h=>`<li>${esc(h)}</li>`).join('')}</ul>
+            <b style="color:var(--danger);">风险</b>
+            <ul class="tight">${c.risks.map(h=>`<li>${esc(h)}</li>`).join('')}</ul>
+            <div style="background:#f7f9fc;border-radius:8px;padding:9px 11px;">
+              <b>概率：</b>${esc(c.prob)}<br>
+              <b>触发条件：</b>${esc(c.trigger)}<br>
+              <b>推翻条件：</b>${esc(c.falsify)}
+            </div>
+          </div>
+        </details>
+      </div>`;
+    }).join('');
+  }
+  renderCands('all');
+  document.querySelectorAll('#c-filter [data-f]').forEach(b=>{
+    b.addEventListener('click',()=>{
+      document.querySelectorAll('#c-filter [data-f]').forEach(x=>x.style.borderColor='var(--line)');
+      b.style.borderColor='#1f6feb';
+      renderCands(b.dataset.f);
+    });
+  });
+
+  /* ══ ③ 体系 ══ */
+  document.getElementById('s-clusters').innerHTML = D.clusters.map(cl=>
+    `<div class="callout ${cl.tone==='ok'?'c-ok':'c-warn'}">
+       <b>${esc(cl.name)}</b><br>${esc(cl.desc)}
+       <div style="font-size:12px;color:#5b6b82;margin-top:7px;"><b>成员：</b>${esc(cl.members)}</div>
+       <div style="font-size:12px;color:var(--danger);margin-top:6px;"><b>⚠️ ${esc(cl.caution)}</b></div>
+     </div>`
+  ).join('');
+
+  /* ══ ④ 风险 ══ */
+  document.getElementById('r-macro').innerHTML = D.risks.macro.map(r=>
+    `<div class="inner" style="margin-bottom:8px;">
+       <b style="color:var(--navy);">${esc(r.name)}</b>
+       <div style="font-size:12.5px;color:#5b6b82;margin-top:3px;">${esc(r.status)}</div>
+       <div style="font-size:12.5px;margin-top:3px;"><b>影响：</b>${esc(r.impact)}</div>
+     </div>`
+  ).join('');
+
+  document.getElementById('r-system').innerHTML = D.risks.system.map(r=>
+    `<div class="inner" style="margin-bottom:8px;">
+       <b style="color:var(--navy);">${esc(r.system)}</b>
+       <div style="font-size:12.5px;margin-top:3px;"><b>风险：</b>${esc(r.risk)}</div>
+       <div style="font-size:12.5px;margin-top:4px;color:var(--danger);"><b>推翻条件：</b>${esc(r.falsify)}</div>
+     </div>`
+  ).join('');
+
+  document.getElementById('r-schedule').innerHTML =
+    `<div class="tblwrap"><table>
+      <thead><tr><th>时点</th><th>事件</th><th>建议动作</th></tr></thead>
+      <tbody>${D.schedule.map(s=>`<tr><td class="mono">${esc(s.time)}</td><td>${esc(s.event)}</td><td>${esc(s.action)}</td></tr>`).join('')}</tbody>
+    </table></div>`;
+
+  document.getElementById('r-data').innerHTML = D.risks.data.map(x=>`<li>${esc(x)}</li>`).join('');
+
+  /* ══ ⑤ 溯源 ══ */
+  document.getElementById('src-body').innerHTML = D.sources.map(s=>
+    `<tr><td>${esc(s.type)}</td><td>${esc(s.src)}</td><td class="mono">${esc(s.date)}</td></tr>`
+  ).join('');
+
+})();
+</script>
+</body>
+</html>
