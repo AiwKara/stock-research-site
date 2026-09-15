@@ -1,0 +1,51 @@
+name: 数据刷新
+
+# 每个工作日 16:30（北京时间 = 08:30 UTC）A 股收盘后运行
+on:
+  schedule:
+    - cron: '30 8 * * 1-5'
+  workflow_dispatch: {}   # 支持在 Actions 页面手动触发
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 刷新量化数据
+        env:
+          EM_API_KEY: ${{ secrets.EM_API_KEY }}
+        run: |
+          if [ -z "$EM_API_KEY" ]; then
+            echo "::warning::未配置 EM_API_KEY Secret，跳过数据刷新。"
+            echo "请到 Settings → Secrets and variables → Actions 添加 EM_API_KEY。"
+            exit 0
+          fi
+          python scripts/refresh.py
+
+      - name: 提交变更
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ -f data/snapshot.json ]; then
+            git add data/snapshot.json
+            if git diff --staged --quiet; then
+              echo "无变更，跳过提交"
+            else
+              git commit -m "chore(data): 自动刷新量化数据 [$(date -u '+%Y-%m-%d %H:%M UTC')]"
+              git push
+            fi
+          else
+            echo "未生成 snapshot.json，跳过提交"
+          fi
